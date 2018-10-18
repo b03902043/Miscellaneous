@@ -1,29 +1,40 @@
 
-import numpy as np
+import sys
+import time
 import unittest
+import numpy as np
+
+def printf(_str):
+    sys.stdout.write(_str)
+    sys.stdout.flush()
 
 class SortChecker(unittest.TestCase):
 
     MAX_TIMES = 10
 
     def setUp(self):
-        pass
+        self.startTime = time.time()
 
     def tearDown(self):
-        pass
+        t = time.time() - self.startTime
+        printf('%.3f ' % t)
 
     def base_sort(self, cls):
+        np.random.seed(6)
         for _ in range(self.MAX_TIMES):
             with self.subTest(iteration=_):
-                ar = np.random.randint(1, 100, 10)
+                #ar = np.random.randint(1, 100, 1000)
+                ar = np.random.random(1000)
                 answer = np.sort(ar)
                 result = cls(ar).run()
                 self.assertTrue(np.all(result == answer))
 
-    def test_mergesort(self):
-        self.base_sort(MergeSort)
     def test_heapsort(self):
         self.base_sort(HeapSort)
+    def test_mergesort(self):
+        self.base_sort(MergeSort)
+    def test_quicksort(self):
+        self.base_sort(QuickSort)
 
 class MergeSort:
 
@@ -103,19 +114,41 @@ class HeapSort:
             largest = left
         if right < N and array[right] > array[largest]:
             largest = right
-        v1 = None if left >= N else array[left]
-        v2 = None if right >= N else array[right]
+        #v1 = None if left >= N else array[left]
+        #v2 = None if right >= N else array[right]
         if largest != idx:
             array[idx], array[largest] = array[largest], array[idx]
             self.heapify(array, N, largest)
 
 class QuickSort:
 
+    Time = 'O(NlogN) ~ O(N^2)'
+    Space = 'O(1)'
+
     def __init__(self, array):
         self.array = array
 
     def run(self):
-        raise NotImplemented
+        return self.qsort(self.array, 0, len(self.array))
+
+    def qsort(self, array, start, end):
+        if end - start <= 1:
+            return
+        # find pivot, put elements smaller than it to left, otherwise right
+        ptr, o_pIdx = start, (start+end)//2
+        pivot = array[o_pIdx]
+        array[o_pIdx], array[end-1] = array[end-1], array[o_pIdx]
+        for i in range(start, end-1):
+            if array[i] < pivot:
+                array[i], array[ptr] = array[ptr], array[i]
+                ptr += 1
+        array[ptr], array[end-1] = array[end-1], array[ptr]
+
+        # sort left & right part (ptr denotes that index of pivot)
+        self.qsort(array, start, ptr)
+        self.qsort(array, ptr+1, end)
+        return array
+
 
 if __name__ == '__main__':
     unittest.main(verbosity=2)
