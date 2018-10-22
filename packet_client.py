@@ -6,7 +6,7 @@
 class PacketAssembler:
 
     def __init__(self):
-        self.ptr, self.offset = 0, 0
+        self.ptr = 0
         self.pdict = dict()
 
     def putPacket(self, offset, data):
