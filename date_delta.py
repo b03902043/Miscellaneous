@@ -6,6 +6,9 @@ class Date:
     def __init__(self, dat):
         self.year, self.month, self.day = list(map(int, [dat[:4], dat[4:6], dat[6:8]]))
 
+    def days_from_year_head(self):
+        return sum(DAYS_PER_MONTH[1:self.month]) + self.day + (1 if self.isRoom(self.year) and self.month >= 3 else 0)
+
     def __le__(self, other):
         if self.year < other.year:
             return True
@@ -18,18 +21,8 @@ class Date:
 
     def __sub__(self, other):
         assert other <= self
-        if self.year == other.year:
-            return sum(DAYS_PER_MONTH[other.month:self.month]) + self.day - other.day + (1 if self.isRoom(self.year) and other.month <= 2 and 2 < self.month else 0)
-        first_part = 365 - (sum(DAYS_PER_MONTH[1:other.month]) + other.day)
-        last_part = sum(DAYS_PER_MONTH[1:self.month]) + self.day
-        if self.isRoom(other.year) and other.month < 3:
-            first_part += 1
-        if self.isRoom(self.year) and self.month >= 3:
-            last_part += 1
-
-        # process [(start_yr + 1) ~ (end_yr - 1)]
-        add_days = len([None for yr in range(other.year+1, self.year) if self.isRoom(yr)])
-        return first_part + last_part + add_days + (self.year-other.year-1)*365
+        m1, m2 = other.days_from_year_head(), self.days_from_year_head()       
+        return sum([366 if self.isRoom(yr) else 365 for yr in range(other.year, self.year)]) - m1 + m2
 
     @staticmethod
     def isRoom(yr):
@@ -39,7 +32,7 @@ class Date:
 import numpy as np
 import datetime
 Date2 = lambda x: datetime.datetime.strptime(x, '%Y%m%d')
-for yr in np.random.randint(1900, 2030, 1):
+for yr in np.random.randint(1900, 2030, 50):
     for month in np.random.randint(1, 13, 10):
         for day in np.random.randint(1, 29, 10):
             start = '%d%02d%02d' % (yr, month, day)
