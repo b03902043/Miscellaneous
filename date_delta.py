@@ -32,12 +32,16 @@ class Date:
 import numpy as np
 import datetime
 Date2 = lambda x: datetime.datetime.strptime(x, '%Y%m%d')
+
+def test(_from, to):
+    v1 = Date(to) - Date(_from)
+    v2 = (Date2(to) - Date2(_from)).days
+    assert v1 == v2, "%s ~ %s, %d vs %d" % (_from, to, v1, v2)
+
 for yr in np.random.randint(1900, 2030, 50):
     for month in np.random.randint(1, 13, 10):
         for day in np.random.randint(1, 29, 10):
             start = '%d%02d%02d' % (yr, month, day)
             end = (Date2(start) + datetime.timedelta(days=np.random.randint(1000))).strftime('%Y%m%d')
 
-            v1 = Date(end) - Date(start)
-            v2 = (Date2(end) - Date2(start)).days
-            assert v1 == v2, "%s ~ %s, %d vs %d" % (start, end, v1, v2)
+            test(start, end)
